@@ -1,0 +1,31 @@
+# Site settings
+title: Food Image Classifier
+description: An image classifier of 34 different classes of cuisine from Indo-Asian and Western.
+author: Md. Sakib Hasan
+
+# Remote theme settings
+remote_theme: "alshedivat/al-folio"
+
+# Build settings
+markdown: kramdown
+theme: jekyll-theme-slate # or another theme if you prefer
+
+# URL settings
+url: "https://sakibyash.github.io/Food_image_classifier"
+baseurl: ""
+
+# Plugins settings
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Exclude files and directories
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - LICENSE
+  - .gitignore
+
+# Markdown options
+markdown: kramdown
