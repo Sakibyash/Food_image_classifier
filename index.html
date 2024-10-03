@@ -14,7 +14,8 @@
     
     <!-- Display Results -->
     <div id="results"></div>
-    
+    <div id="imagePreview" style="margin-top: 20px;"></div>
+
     <script type="module">
         import { Client, handle_file } from "@gradio/client";  // Ensure this package is installed in your project
 
@@ -26,6 +27,10 @@
                 alert('Please upload an image.');
                 return;
             }
+
+            // Display the uploaded image
+            const imagePreview = document.getElementById('imagePreview');
+            imagePreview.innerHTML = `<img src="${URL.createObjectURL(file)}" width="300" alt="Uploaded Image">`;
 
             // Convert file to Blob if needed
             const blob = new Blob([file], { type: file.type });
@@ -40,7 +45,6 @@
                 // Display the prediction
                 document.getElementById('results').innerHTML = `
                     <h3>Prediction: ${label}</h3>
-                    <img src="${URL.createObjectURL(file)}" width="300">
                 `;
             } catch (error) {
                 console.error('Error:', error);
