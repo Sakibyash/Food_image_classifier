@@ -25,21 +25,21 @@
                 return;
             }
 
-            // Prepare the form data (Blob/File as required by Hugging Face)
+            // Prepare the form data (Blob/File as required by the API)
             const formData = new FormData();
-            formData.append('data', file);  // Append the file directly as "data"
+            formData.append('data', file);  // Append the file as "data"
 
             try {
                 // Call Hugging Face API
-                const response = await fetch("https://sakibrumu-food-image-classification.hf.space/run/predict", {
-                    method: "POST",
-                    body: formData,  // Send the formData object with the file
+                const response = await fetch("https://sakibrumu-food-image-classification.hf.space/run/predict_image", {
+                    method: "POST",  // Use POST method as required
+                    body: formData,  // Send the form data with the file
                 });
 
                 // Handle the API response
                 if (response.ok) {
                     const result = await response.json();
-                    const label = result.data[0].label;  // Adjust if necessary based on response structure
+                    const label = result.data[0].label;  // Adjust based on the response structure
 
                     // Display the uploaded image and prediction result
                     document.getElementById('results').innerHTML = `
