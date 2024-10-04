@@ -4,52 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Image Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        input[type="file"], button {
+            margin: 20px 0;
+        }
+        img {
+            margin-top: 20px;
+            max-width: 500px;
+        }
+        pre {
+            text-align: left;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>Food Image Classifier</h1>
 
     <!-- HTML for image upload and result display -->
-    <input type="file" id="photo" accept="image/*">
+    <input type="file" id="photo" accept="image/*"><br/>
+    <button id="submit-btn">Submit</button>
     <div id="results"></div>
 
     <script type="module">
         // Import the Gradio client from the CDN
         import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client@0.1.4/dist/index.min.js";
 
+        let reader = new FileReader();
+        let uploadedImage = null;
+
         // Load image and send it to the Gradio API for prediction
-        async function loadImage(reader) {
-            // Connect to your Gradio app hosted on Hugging Face Spaces
-            const app = await client("https://sakibrumu-food-image-classification.hf.space/");
+        async function loadImage() {
+            if (!uploadedImage) {
+                alert('Please upload an image first!');
+                return;
+            }
+            
+            try {
+                // Connect to your Gradio app hosted on Hugging Face Spaces
+                const app = await client("https://sakibrumu-food-image-classification.hf.space/");
 
-            // Send the image to the Gradio app for prediction
-            const response = await app.predict("/predict", [reader.result]);
+                // Send the image to the Gradio app for prediction
+                const response = await app.predict("/predict", [uploadedImage]);
 
-            // Log the response (for debugging purposes)
-            console.log(response);
+                // Log the response (for debugging purposes)
+                console.log(response);
 
-            // Get prediction and probabilities
-            const pred_label = response.data[0].label;
-            const predictions = response.data[0].predictions;
+                // Get prediction and probabilities
+                const pred_label = response.data[0].label;
+                const predictions = response.data[0].predictions;
 
-            // Display the result and the uploaded image
-            document.getElementById("results").innerHTML = `
-                <p><strong>Prediction:</strong> ${pred_label}</p>
-                <p><strong>Probabilities:</strong></p>
-                <pre>${JSON.stringify(predictions, null, 2)}</pre>
-                <img src="${reader.result}" width="500"> 
-            `;
+                // Display the result and the uploaded image
+                document.getElementById("results").innerHTML = `
+                    <p><strong>Prediction:</strong> ${pred_label}</p>
+                    <p><strong>Probabilities:</strong></p>
+                    <pre>${JSON.stringify(predictions, null, 2)}</pre>
+                    <img src="${uploadedImage}" width="500"> 
+                `;
+            } catch (error) {
+                document.getElementById("results").innerHTML = `<p><strong>Error:</strong> Something went wrong. Please try again later.</p>`;
+                console.error('Prediction error:', error);
+            }
         }
 
-        // Create a file reader to handle image uploads
-        const reader = new FileReader();
-
-        // Once the image is loaded, call the `loadImage` function to send it for prediction
-        reader.addEventListener("load", () => loadImage(reader));
-
-        // Set up the file input to read and process the uploaded image
+        // Handle image uploads
         document.getElementById("photo").addEventListener("input", function() {
             reader.readAsDataURL(this.files[0]);
         });
-    </script>
-</body>
-</html>
+
+        // Store the uploaded image when it's loaded
+        reader.onload = function () {
+            uploadedImage = reader.result;
+        };
+
+        // Submit button event listener
+        document.getElementById("submit-b
