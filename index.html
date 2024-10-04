@@ -4,54 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Image Classifier</title>
-    <script src="https://cdn.jsdelivr.net/npm/@gradio/client"></script> <!-- Include Gradio Client -->
 </head>
 <body>
     <h1>Food Image Classifier</h1>
-    
-    <!-- Image Upload -->
-    <input type="file" id="imageUpload" accept="image/*">
-    <button id="submitButton">Submit</button>
-    
-    <!-- Display Results -->
+
+    <!-- HTML for image upload and result display -->
+    <input type="file" id="photo" accept="image/*">
     <div id="results"></div>
-    <div id="imagePreview" style="margin-top: 20px;"></div>
 
-    <script>
-        async function submitImage() {
-            const fileInput = document.getElementById('imageUpload');
-            const file = fileInput.files[0];
+    <script type="module">
+        // Import the Gradio client from the CDN
+        import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client@0.1.4/dist/index.min.js";
 
-            if (!file) {
-                alert('Please upload an image.');
-                return;
-            }
+        // Load image and send it to the Gradio API for prediction
+        async function loadImage(reader) {
+            // Connect to your Gradio app hosted on Hugging Face Spaces
+            const app = await client("https://sakibrumu-food-image-classification.hf.space/");
 
-            // Display the uploaded image
-            const imagePreview = document.getElementById('imagePreview');
-            imagePreview.innerHTML = `<img src="${URL.createObjectURL(file)}" width="300" alt="Uploaded Image">`;
+            // Send the image to the Gradio app for prediction
+            const response = await app.predict("/predict", [reader.result]);
 
-            // Convert file to Blob
-            const blob = new Blob([file], { type: file.type });
+            // Log the response (for debugging purposes)
+            console.log(response);
 
-            try {
-                const app = await gradio.Client.connect("Sakibrumu/Food_Image_Classification"); // Use the global gradio.Client
-                const result = await app.predict("/predict_image", [gradio.handle_file(blob)]); // Use handle_file to process the blob
-                
-                // Handle the prediction result
-                const label = result.data[0].label; // Adjust based on your API's response structure
+            // Get prediction and probabilities
+            const pred_label = response.data[0].label;
+            const predictions = response.data[0].predictions;
 
-                // Display the prediction
-                document.getElementById('results').innerHTML = `
-                    <h3>Prediction: ${label}</h3>
-                `;
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error: ' + error.message);
-            }
+            // Display the result and the uploaded image
+            document.getElementById("results").innerHTML = `
+                <p><strong>Prediction:</strong> ${pred_label}</p>
+                <p><strong>Probabilities:</strong></p>
+                <pre>${JSON.stringify(predictions, null, 2)}</pre>
+                <img src="${reader.result}" width="500"> 
+            `;
         }
 
-        document.getElementById('submitButton').addEventListener('click', submitImage);
+        // Create a file reader to handle image uploads
+        const reader = new FileReader();
+
+        // Once the image is loaded, call the `loadImage` function to send it for prediction
+        reader.addEventListener("load", () => loadImage(reader));
+
+        // Set up the file input to read and process the uploaded image
+        document.getElementById("photo").addEventListener("input", function() {
+            reader.readAsDataURL(this.files[0]);
+        });
     </script>
 </body>
 </html>
