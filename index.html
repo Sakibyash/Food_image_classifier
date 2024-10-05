@@ -1,42 +1,32 @@
-<script type="module">
-  import { Client } from 'https://cdn.jsdelivr.net/npm/@gradio/client@latest/dist/index.min.js';
+import { Client } from "@gradio/client";
 
-  // Load image and send it to the Gradio API for prediction
-  async function loadImage(reader) {
-      // Create a new Client object to connect to your Gradio app
-      const app = new Client("https://sakibrumu-food-image-classification.hf.space/");
+async function runPrediction() {
+    // Fetch an example image (this would be replaced by the user's uploaded image in practice)
+    const response_0 = await fetch("https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png");
+    const exampleImage = await response_0.blob();
+    
+    // Instantiate the client for your Hugging Face Space
+    const client = new Client("https://sakibrumu-food-image-classification5.hf.space/");
 
-      // Send the image to the Gradio app for prediction
-      const response = await app.predict("/predict", [reader.result]);
+    // Send the image to the Gradio app for prediction
+    const result = await client.predict("/predict", {
+        data: [exampleImage]
+    });
 
-      // Log the response (for debugging purposes)
-      console.log(response);
+    // Log the prediction result
+    console.log(result.data);
 
-      // Get prediction and probabilities
-      const pred_label = response.data[0].label;
-      const predictions = response.data[0].predictions;
+    // Get prediction label and probabilities (adjust according to the response format)
+    const pred_label = result.data[0].label;
+    const predictions = result.data[0].predictions;
 
-      // Display the result and the uploaded image
-      document.getElementById("results").innerHTML = `
-          <p><strong>Prediction:</strong> ${pred_label}</p>
-          <p><strong>Probabilities:</strong></p>
-          <pre>${JSON.stringify(predictions, null, 2)}</pre>
-          <img src="${reader.result}" width="500"> 
-      `;
-  }
+    // Display the result and the uploaded image in the DOM
+    document.getElementById("results").innerHTML = `
+        <p><strong>Prediction:</strong> ${pred_label}</p>
+        <p><strong>Probabilities:</strong></p>
+        <pre>${JSON.stringify(predictions, null, 2)}</pre>
+        <img src="${URL.createObjectURL(exampleImage)}" width="500">
+    `;
+}
 
-  // Create a file reader to handle image uploads
-  const reader = new FileReader();
-
-  // Once the image is loaded, call the `loadImage` function to send it for prediction
-  reader.addEventListener("load", () => loadImage(reader));
-
-  // Set up the file input to read and process the uploaded image
-  document.getElementById("photo").addEventListener("input", function() {
-      reader.readAsDataURL(this.files[0]);
-  });
-</script>
-
-<!-- HTML for image upload and result display -->
-<input type="file" id="photo" accept="image/*">
-<div id="results"></div>
+runPrediction().catch(console.error);
