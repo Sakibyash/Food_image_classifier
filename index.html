@@ -4,36 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Image Classifier</title>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@gradio/client@latest/dist/index.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        #results {
-            margin-top: 20px;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>Food Image Classifier</h1>
-    <input type="file" id="photo" accept="image/*">
-    <div id="results"></div>
-
+    <!-- Include the Gradio Client from jsDelivr CDN -->
     <script type="module">
-        import { Client } from "@gradio/client";
-
+        import { Client } from 'https://cdn.jsdelivr.net/npm/@gradio/client@0.1.4/dist/index.min.js';
+        
         document.getElementById("photo").addEventListener("change", async function() {
             const file = this.files[0]; // Get the uploaded image
 
             if (file) {
-                const client = new Client("https://sakibrumu-food-image-classification5.hf.space/");
+                const client = new Client("https://sakibrumu-food-image-classification.hf.space/");
                 
                 // Create a new FileReader to read the uploaded image
                 const reader = new FileReader();
@@ -62,6 +41,27 @@
             }
         });
     </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Food Image Classifier</h1>
+    <input type="file" id="photo" accept="image/*">
+    <div id="results"></div>
 
 </body>
 </html>
+
