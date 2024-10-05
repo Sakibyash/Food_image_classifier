@@ -1,32 +1,67 @@
-import { Client } from "@gradio/client";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Image Classifier</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@gradio/client@latest/dist/index.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
 
-async function runPrediction() {
-    // Fetch an example image (this would be replaced by the user's uploaded image in practice)
-    const response_0 = await fetch("https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png");
-    const exampleImage = await response_0.blob();
-    
-    // Instantiate the client for your Hugging Face Space
-    const client = new Client("https://sakibrumu-food-image-classification5.hf.space/");
+    <h1>Food Image Classifier</h1>
+    <input type="file" id="photo" accept="image/*">
+    <div id="results"></div>
 
-    // Send the image to the Gradio app for prediction
-    const result = await client.predict("/predict", {
-        data: [exampleImage]
-    });
+    <script type="module">
+        import { Client } from "@gradio/client";
 
-    // Log the prediction result
-    console.log(result.data);
+        document.getElementById("photo").addEventListener("change", async function() {
+            const file = this.files[0]; // Get the uploaded image
 
-    // Get prediction label and probabilities (adjust according to the response format)
-    const pred_label = result.data[0].label;
-    const predictions = result.data[0].predictions;
+            if (file) {
+                const client = new Client("https://sakibrumu-food-image-classification5.hf.space/");
+                
+                // Create a new FileReader to read the uploaded image
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async function () {
+                    // Send the image to the Gradio app for prediction
+                    const result = await client.predict("/predict", {
+                        data: [file]  // Send the file directly as `data`
+                    });
 
-    // Display the result and the uploaded image in the DOM
-    document.getElementById("results").innerHTML = `
-        <p><strong>Prediction:</strong> ${pred_label}</p>
-        <p><strong>Probabilities:</strong></p>
-        <pre>${JSON.stringify(predictions, null, 2)}</pre>
-        <img src="${URL.createObjectURL(exampleImage)}" width="500">
-    `;
-}
+                    // Log the prediction result for debugging
+                    console.log(result.data);
 
-runPrediction().catch(console.error);
+                    // Get prediction label and probabilities
+                    const pred_label = result.data[0].label;
+                    const predictions = result.data[0].predictions;
+
+                    // Display the result and the uploaded image in the DOM
+                    document.getElementById("results").innerHTML = `
+                        <p><strong>Prediction:</strong> ${pred_label}</p>
+                        <p><strong>Probabilities:</strong></p>
+                        <pre>${JSON.stringify(predictions, null, 2)}</pre>
+                        <img src="${reader.result}" width="500">
+                    `;
+                };
+            }
+        });
+    </script>
+
+</body>
+</html>
