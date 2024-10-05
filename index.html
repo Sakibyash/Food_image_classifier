@@ -1,58 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Image Classifier</title>
-</head>
-<body>
-    <h1>Food Image Classifier</h1>
+<script type="module">
+    // Import the Gradio client from the CDN
+    import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client@0.1.4/dist/index.min.js";
 
-    <!-- HTML for image upload and result display -->
-    <input type="file" id="photo" accept="image/*">
-    <button id="submitBtn">Submit</button>
-    <div id="results"></div>
+    // Load image and send it to the Gradio API for prediction
+    async function loadImage(reader) {
+        // Connect to your Gradio app hosted on Hugging Face Spaces
+        const app = await client("https://sakibrumu-food-image-classification.hf.space/");
 
-    <script type="module">
-        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client@0.1.4/dist/index.min.js";
+        // Send the image to the Gradio app for prediction
+        const response = await app.predict("/predict", [reader.result]);
 
-        // Load image and send it to the Gradio API for prediction
-        async function loadImage(file) {
-            const client = await Client.connect("Sakibrumu/Food_Image_Classification");
+        // Log the response (for debugging purposes)
+        console.log(response);
 
-            // Prepare the image as a blob
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const base64Image = reader.result;
+        // Get prediction and probabilities
+        const pred_label = response.data[0].label;
+        const predictions = response.data[0].predictions;
 
-                // Make prediction request
-                const result = await client.predict("/predict_image", {
-                    img: base64Image,
-                });
+        // Display the result and the uploaded image
+        document.getElementById("results").innerHTML = `
+            <p><strong>Prediction:</strong> ${pred_label}</p>
+            <p><strong>Probabilities:</strong></p>
+            <pre>${JSON.stringify(predictions, null, 2)}</pre>
+            <img src="${reader.result}" width="500"> 
+        `;
+    }
 
-                // Log the result (for debugging)
-                console.log(result.data);
+    // Create a file reader to handle image uploads
+    const reader = new FileReader();
 
-                // Display the result and the uploaded image
-                document.getElementById("results").innerHTML = `
-                    <p><strong>Prediction:</strong> ${result.data[0].label}</p>
-                    <p><strong>Probabilities:</strong></p>
-                    <pre>${JSON.stringify(result.data[0].predictions, null, 2)}</pre>
-                    <img src="${base64Image}" width="500">
-                `;
-            };
-        }
+    // Once the image is loaded, call the `loadImage` function to send it for prediction
+    reader.addEventListener("load", () => loadImage(reader));
 
-        // Add event listener to the submit button
-        document.getElementById("submitBtn").addEventListener("click", () => {
-            const fileInput = document.getElementById("photo");
-            if (fileInput.files.length > 0) {
-                loadImage(fileInput.files[0]);
-            } else {
-                alert("Please upload an image.");
-            }
-        });
-    </script>
-</body>
-</html>
+    // Set up the file input to read and process the uploaded image
+    document.getElementById("photo").addEventListener("input", function() {
+        reader.readAsDataURL(this.files[0]);
+    });
+</script>
+
+<!-- HTML for image upload and result display -->
+<input type="file" id="photo" accept="image/*">
+<div id="results"></div>
